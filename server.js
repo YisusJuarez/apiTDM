@@ -1,10 +1,10 @@
 var express = require("express");
-var bodyParser = require("body-parser");
 var sql = require("mssql");
 var app = express();
+var json = require('json');
 
 // Body Parser Middleware
-app.use(bodyParser.json());
+app.use(express.json());
 
 //CORS Middleware
 app.use(function (req, res, next) {
@@ -26,10 +26,22 @@ var dbConfig = {
     user: 'SA',
     password: 'CAPUFE',
     server: 'localhost',
-    database: 'TDM'
+    database: 'TDM',
+    parseJSON: true
 };
 
-//Function to connect to database and execute query
+
+app.get('/api/inicio', async function (req, res) {
+    // make sure that any items are correctly URL encoded in the connection string
+    await sql.connect(dbConfig)
+    //const result = await sql.query`select * from mytable where id = ${value}`
+    var result = await sql.query`SELECT TOP 9 Nombre, ImgUrl, Fecha FROM Articles ORDER BY IdArticle DESC`
+    var inicio = JSON.parse(JSON.stringify(result))
+    console.log(typeof inicio)
+    res.json({ data: inicio });
+
+});
+
 var executeQuery = function (res, query) {
     sql.connect(dbConfig, function (err) {
         if (err) {
@@ -51,18 +63,10 @@ var executeQuery = function (res, query) {
         }
     });
 }
-//OBTENER ARTICULOS PARA INCIO
-//GET API
-app.get("/api/inicio", function (req, res) {
-    var query = "SELECT TOP 9 Nombre, ImgUrl, Fecha FROM Articles ORDER BY IdArticle DESC";
-    executeQuery(res, query);
-});
-
-//BUSCAR POR DIRECCION DEL ARTICULO PARA BLOGPOST
 app.get("/api/articulo/:art", function (req, res) {
     //se obtiene ImgUrl al hacer post
     var ImgUrl = req.params.art;
-     var query = `SELECT a.IdArticle, a.Url, a.Nombre, a.Fecha, a.Body, a.ImgUrl, u.UserName, s.Nombre AS Section FROM Articles a 
+     var query = `SELECT TOP 1 a.IdArticle, a.Url, a.Nombre, FORMAT(Fecha,'yyyy-MM-dd HH:mm:ss') as Fecha, a.Body, a.ImgUrl, u.UserName, s.Nombre AS Section FROM Articles a 
      INNER JOIN Users u ON a.IdUser = u.IdUser
      INNER JOIN Sections s ON a.IdSection = s.IdSection
      WHERE a.Url = '${ImgUrl}'`;

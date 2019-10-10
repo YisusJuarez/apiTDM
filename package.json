@@ -4,8 +4,9 @@
   "description": "Api Twodifferentminds",
   "main": "server.js",
   "dependencies": {
-    "express": "^4.14.0",
     "body-parser": "^1.15.2",
+    "express": "^4.14.0",
+    "json": "^9.0.6",
     "mssql": "^ 3.3.0"
   },
   "scripts": {
