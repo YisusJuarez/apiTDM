@@ -35,7 +35,7 @@ app.get('/api/inicio', async function (req, res) {
     // make sure that any items are correctly URL encoded in the connection string
     await sql.connect(dbConfig)
     //const result = await sql.query`select * from mytable where id = ${value}`
-    var result = await sql.query`SELECT TOP 9 Nombre, ImgUrl, Fecha FROM Articles ORDER BY IdArticle DESC`
+    var result = await sql.query`SELECT TOP 9 Nombre, ImgUrl, FORMAT(Fecha,'yyyy-MM-dd HH:mm:ss') as Fecha FROM Articles ORDER BY IdArticle DESC`
     var inicio = JSON.parse(JSON.stringify(result))
     console.log(typeof inicio)
     res.json({ data: inicio });
@@ -73,3 +73,9 @@ app.get("/api/articulo/:art", function (req, res) {
      console.log(query);
     executeQuery(res, query);
 });
+app.get("/api/:img", function (req,res){
+    var url = req.params.img;
+    var imgsrc = `./public/${url}.jpg`;
+    res.sendfile(imgsrc);
+    console.log(imgsrc);
+})
