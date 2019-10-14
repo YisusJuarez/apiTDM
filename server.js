@@ -30,14 +30,30 @@ var dbConfig = {
     parseJSON: true
 };
 
-
+// GET ART INICIO
 app.get('/api/inicio', async function (req, res) {
     // make sure that any items are correctly URL encoded in the connection string
     await sql.connect(dbConfig)
     //const result = await sql.query`select * from mytable where id = ${value}`
-    var result = await sql.query`SELECT TOP 9 Nombre, ImgUrl, FORMAT(Fecha,'yyyy-MM-dd HH:mm:ss') as Fecha FROM Articles ORDER BY IdArticle DESC`
+    var result = await sql.query`SELECT TOP 9 Nombre, ImgUrl, FORMAT(Fecha,'yyyy-MM-dd HH:mm:ss') as Fecha FROM Articles ORDER BY IdArticle ASC`
     var inicio = JSON.parse(JSON.stringify(result))
     console.log(typeof inicio)
+    res.json({ data: inicio });
+
+});
+//GER ART INDV AND EXTRAS
+app.get('/api/articulo/:art', async function (req, res) {
+    // make sure that any items are correctly URL encoded in the connection string
+    await sql.connect(dbConfig)
+    var ImgUrl =  req.params.art;
+    //const result = await sql.query`select * from mytable where id = ${value}`
+    var result = await sql.query`SELECT TOP 1 a.IdArticle, a.Url, a.Nombre, FORMAT(Fecha,'yyyy-MM-dd HH:mm:ss') as Fecha, a.Body, a.ImgUrl, u.UserName, s.Nombre AS Section FROM Articles a 
+    INNER JOIN Users u ON a.IdUser = u.IdUser
+    INNER JOIN Sections s ON a.IdSection = s.IdSection
+    WHERE a.Url = ${ImgUrl}`
+    var result2 = await sql.query`select top 4 Url, Nombre, ImgUrl  from Articles`
+    var inicio = JSON.parse(JSON.stringify(result.concat(result2)))
+    console.log(result)
     res.json({ data: inicio });
 
 });
@@ -63,19 +79,18 @@ var executeQuery = function (res, query) {
         }
     });
 }
-app.get("/api/articulo/:art", function (req, res) {
-    //se obtiene ImgUrl al hacer post
-    var ImgUrl = req.params.art;
-     var query = `SELECT TOP 1 a.IdArticle, a.Url, a.Nombre, FORMAT(Fecha,'yyyy-MM-dd HH:mm:ss') as Fecha, a.Body, a.ImgUrl, u.UserName, s.Nombre AS Section FROM Articles a 
-     INNER JOIN Users u ON a.IdUser = u.IdUser
-     INNER JOIN Sections s ON a.IdSection = s.IdSection
-     WHERE a.Url = '${ImgUrl}'`;
-     console.log(query);
-    executeQuery(res, query);
-});
-app.get("/api/:img", function (req,res){
+//GET IMG
+app.get("/api/img/:img", function (req,res){
     var url = req.params.img;
     var imgsrc = `./public/${url}.jpg`;
     res.sendfile(imgsrc);
     console.log(imgsrc);
 })
+
+// //Más artículos diferentes del actual para BlogPost
+// app.get("/api/masarticulos/:ImgUrlactual", function(req, res){
+//     var actual = req.params.ImgUrlactual;
+//     var query = `SELECT TOP 4 Nombre, ImgUrl FROM Articles WHERE ImgUrl != '${actual}' ORDER BY IdArticle DESC`
+//     executeQuery(res,query);
+//     console.log(res, query);
+// })
