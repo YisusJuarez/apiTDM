@@ -30,14 +30,44 @@ var dbConfig = {
     parseJSON: true
 };
 
+//GET ALL ARTS W/ PAGINATION
+app.get('/api/inicio/all', async function (req, res) {
+    await sql.connect(dbConfig)
+    var articles = await sql.query`SELECT Nombre, ImgUrl, FORMAT(Fecha,'yyyy-MM-dd HH:mm:ss') as Fecha FROM Articles ORDER BY cast([Fecha] as datetime) DESC OFFSET 0 ROWS FETCH NEXT 3 ROWS ONLY `;
+    var result = JSON.parse(JSON.stringify(articles))
+    res.json({ data: result });
+    console.log(result)
+
+});
+//GET ALL ARTS W/ PAGINATION for more
+app.get('/api/inicio/all/:next', async function (req, res) {
+    await sql.connect(dbConfig)
+    var next = parseInt(req.params.next);
+    var articles = await sql.query`SELECT Nombre, ImgUrl, FORMAT(Fecha,'yyyy-MM-dd HH:mm:ss') as Fecha FROM Articles ORDER BY cast([Fecha] as datetime) DESC OFFSET 0 ROWS FETCH NEXT ${next} ROWS ONLY `;
+    var result = JSON.parse(JSON.stringify(articles))
+    res.json({ data: result });
+    
+
+});
+
 //GET ARTS BY SECTION
 app.get('/api/seccion/:section', async function (req, res) {
     await sql.connect(dbConfig)
     var seccion = req.params.section;
-    var articles = await sql.query`SELECT Nombre, ImgUrl, FORMAT(Fecha,'yyyy-MM-dd HH:mm:ss') as Fecha FROM Articles WHERE IdSection = ${seccion} ORDER BY cast([Fecha] as datetime) DESC OFFSET 0 ROWS FETCH NEXT 9 ROWS ONLY`;
+    var articles = await sql.query`SELECT Nombre, ImgUrl, FORMAT(Fecha,'yyyy-MM-dd HH:mm:ss') as Fecha FROM Articles WHERE IdSection = ${seccion} ORDER BY cast([Fecha] as datetime) DESC OFFSET 0 ROWS FETCH NEXT 3 ROWS ONLY`;
     var result = JSON.parse(JSON.stringify(articles))
     res.json({ data: result });
-    console.log(result)
+
+});
+//GET MORE ARTS BY SECTION
+app.get('/api/seccion/:section/:next', async function (req, res) {
+    await sql.connect(dbConfig)
+    var seccion = req.params.section;
+    var next = parseInt(req.params.next);
+    var articles = await sql.query`SELECT Nombre, ImgUrl, FORMAT(Fecha,'yyyy-MM-dd HH:mm:ss') as Fecha FROM Articles WHERE IdSection = ${seccion} ORDER BY cast([Fecha] as datetime) DESC OFFSET 0 ROWS FETCH NEXT ${next} ROWS ONLY`;
+    var result = JSON.parse(JSON.stringify(articles))
+    res.json({ data: result });
+    console.log(next)
 
 });
 
